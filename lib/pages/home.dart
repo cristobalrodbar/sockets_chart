@@ -38,20 +38,39 @@ class _HomePageState extends State<HomePage> {
             itemBuilder: (context, i) => _inputValueTile(inputValues[i])));
   }
 
-  ListTile _inputValueTile(InputValues inputValues) {
-    return ListTile(
-      leading: CircleAvatar(
-        backgroundColor: Colors.blue[100],
-        child: Text(inputValues.name.substring(0, 2)),
-      ),
-      title: Text(inputValues.name),
-      trailing: Text(
-        '${inputValues.votes}',
-        style: const TextStyle(fontSize: 20),
-      ),
-      onTap: () {
-        print(inputValues.name);
+  Widget _inputValueTile(InputValues inputValue) {
+    return Dismissible(
+      key: Key(inputValue.id),
+      direction: DismissDirection.startToEnd,
+      onDismissed: (direction) {
+        //TO
+        print('direction: $direction');
+        print('inputValues: ${inputValue.id}');
       },
+      background: Container(
+        padding: EdgeInsets.only(left: 8.0),
+        color: Colors.red,
+        child: Align(
+            alignment: Alignment.centerLeft,
+            child: Text(
+              'Delete',
+              style: TextStyle(color: Colors.white),
+            )),
+      ),
+      child: ListTile(
+        leading: CircleAvatar(
+          backgroundColor: Colors.blue[100],
+          child: Text(inputValue.name.substring(0, 2)),
+        ),
+        title: Text(inputValue.name),
+        trailing: Text(
+          '${inputValue.votes}',
+          style: const TextStyle(fontSize: 20),
+        ),
+        onTap: () {
+          print(inputValue.name);
+        },
+      ),
     );
   }
 

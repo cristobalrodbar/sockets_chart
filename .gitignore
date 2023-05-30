@@ -9,6 +9,7 @@
 .history
 .svn/
 migrate_working_dir/
+/sockets_chart_server/node_modules/
 
 # IntelliJ related
 *.iml
