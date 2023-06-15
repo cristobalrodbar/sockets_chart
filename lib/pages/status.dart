@@ -18,7 +18,7 @@ class StatusPage extends StatelessWidget {
         ),
       ),
       floatingActionButton: FloatingActionButton(
-          child: Icon(Icons.message),
+          child: const Icon(Icons.message),
           onPressed: () {
             //  TAREA
             // emitir: emitir-mensaje

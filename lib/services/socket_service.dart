@@ -19,7 +19,7 @@ class SocketService with ChangeNotifier {
 
   void _initConfig() {
     // Dart client
-    _socket = IO.io('http://192.168.0.5:3000/', {
+    _socket = IO.io('http://192.168.0.172:3000/', {
       'transports': ['websocket'],
       'autoConnect': true
     });
@@ -38,14 +38,15 @@ class SocketService with ChangeNotifier {
     socket.emit('emitir-mensaje', 'Cristobal');
     socket.emit('emitir-mensaje', {nombre: 'Cristóbal', mensaje: 'hola mundo!'});
     */
-    _socket.on('nuevo-mensaje', (payload) {
+
+    /* _socket.on('nuevo-mensaje', (payload) {
       print('nuevo-mensaje: $payload');
       print('nombre: ' + payload['nombre']);
       print('mensaje: ' + payload['mensaje']);
       print(payload.containsKey('mensaje2') ? payload['mensaje2'] : 'no hay');
-    });
+    }); */
 
-    _socket.off('nuevo-mensaje');
+    //_socket.off('nuevo-mensaje');
   }
 }
 

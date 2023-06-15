@@ -2,7 +2,9 @@ import 'dart:io';
 
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 import 'package:sockets_chart/models/input_values.dart';
+import 'package:sockets_chart/services/socket_service.dart';
 
 class HomePage extends StatefulWidget {
   @override
@@ -19,6 +21,7 @@ class _HomePageState extends State<HomePage> {
 
   @override
   Widget build(BuildContext context) {
+    final socketService = Provider.of<SocketService>(context);
     return Scaffold(
         floatingActionButton: FloatingActionButton(
           onPressed: addNewInputvalue,
@@ -32,6 +35,19 @@ class _HomePageState extends State<HomePage> {
             style: TextStyle(color: Colors.black87),
           ),
           backgroundColor: Colors.white,
+          actions: [
+            Container(
+                margin: const EdgeInsets.only(right: 10),
+                child: (socketService.serverStatus == ServerStatus.Online)
+                    ? Icon(
+                        Icons.check_circle,
+                        color: Colors.blue[300],
+                      )
+                    : const Icon(
+                        Icons.offline_bolt,
+                        color: Colors.red,
+                      ))
+          ],
         ),
         body: ListView.builder(
             itemCount: inputValues.length,
