@@ -3,7 +3,7 @@ import 'dart:io';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import 'package:sockets_chart/models/input_values.dart';
+import 'package:sockets_chart/models/input_value.dart';
 import 'package:sockets_chart/services/socket_service.dart';
 
 class HomePage extends StatefulWidget {
@@ -12,12 +12,32 @@ class HomePage extends StatefulWidget {
 }
 
 class _HomePageState extends State<HomePage> {
-  List<InputValues> inputValues = [
-    InputValues(id: '1', name: 'Los Acosta', votes: 3),
-    InputValues(id: '2', name: 'Mi Banda El Mexicano', votes: 6),
-    InputValues(id: '3', name: 'Rufus du Sol', votes: 2),
-    InputValues(id: '4', name: 'Arctic Macacos', votes: 8),
+  List<InputValue> inputValues = [
+    /*  InputValue(id: '1', name: 'Los Acosta', votes: 3),
+    InputValue(id: '2', name: 'Mi Banda El Mexicano', votes: 6),
+    InputValue(id: '3', name: 'Rufus du Sol', votes: 2),
+    InputValue(id: '4', name: 'Arctic Macacos', votes: 8), */
   ];
+
+  @override
+  void initState() {
+    final socketService = Provider.of<SocketService>(context, listen: false);
+    socketService.socket.on('active-values', (payload) {
+      //print(payload);
+      inputValues = (payload as List)
+          .map((inputValue) => InputValue.fromMap(inputValue))
+          .toList();
+      setState(() {});
+    });
+    super.initState();
+  }
+
+  @override
+  void dispose() {
+    final socketService = Provider.of<SocketService>(context, listen: false);
+    socketService.socket.off('active-values');
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -54,7 +74,9 @@ class _HomePageState extends State<HomePage> {
             itemBuilder: (context, i) => _inputValueTile(inputValues[i])));
   }
 
-  Widget _inputValueTile(InputValues inputValue) {
+  Widget _inputValueTile(InputValue inputValue) {
+    final socketService = Provider.of<SocketService>(context, listen: false);
+
     return Dismissible(
       key: Key(inputValue.id),
       direction: DismissDirection.startToEnd,
@@ -84,7 +106,9 @@ class _HomePageState extends State<HomePage> {
           style: const TextStyle(fontSize: 20),
         ),
         onTap: () {
-          print(inputValue.name);
+          socketService.socket.emit('vote-input', {'id': inputValue.id});
+          print(inputValue.id);
+          //print(inputValue.name);
         },
       ),
     );
@@ -138,8 +162,8 @@ class _HomePageState extends State<HomePage> {
   void addNewInputvalueToList(String name) {
     print(name);
     if (name.length > 1) {
-      inputValues.add(
-          InputValues(id: DateTime.now().toString(), name: name, votes: 0));
+      inputValues
+          .add(InputValue(id: DateTime.now().toString(), name: name, votes: 0));
       setState(() {});
     }
     Navigator.pop(context);
