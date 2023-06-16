@@ -121,15 +121,15 @@ class _HomePageState extends State<HomePage> {
           context: context,
           builder: (context) {
             return AlertDialog(
-              title: Text('New Input Value'),
+              title: const Text('New Input Value'),
               content: TextField(controller: textcontroller),
               actions: [
                 MaterialButton(
-                    child: Text('Add'),
                     elevation: 5,
                     textColor: Colors.blue,
                     onPressed: () =>
-                        addNewInputvalueToList(textcontroller.text))
+                        addNewInputvalueToList(textcontroller.text),
+                    child: const Text('Add'))
               ],
             );
           });
@@ -162,9 +162,11 @@ class _HomePageState extends State<HomePage> {
   void addNewInputvalueToList(String name) {
     print(name);
     if (name.length > 1) {
-      inputValues
-          .add(InputValue(id: DateTime.now().toString(), name: name, votes: 0));
-      setState(() {});
+      //inputValues.add(InputValue(id: DateTime.now().toString(), name: name, votes: 0));
+      //setState(() {});
+      final socketService = Provider.of<SocketService>(context, listen: false);
+
+      socketService.socket.emit('add-input', {'name': name});
     }
     Navigator.pop(context);
   }
