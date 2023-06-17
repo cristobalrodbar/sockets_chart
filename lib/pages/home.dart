@@ -2,6 +2,7 @@ import 'dart:io';
 
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:pie_chart/pie_chart.dart';
 import 'package:provider/provider.dart';
 import 'package:sockets_chart/models/input_value.dart';
 import 'package:sockets_chart/services/socket_service.dart';
@@ -22,14 +23,15 @@ class _HomePageState extends State<HomePage> {
   @override
   void initState() {
     final socketService = Provider.of<SocketService>(context, listen: false);
-    socketService.socket.on('active-values', (payload) {
-      //print(payload);
-      inputValues = (payload as List)
-          .map((inputValue) => InputValue.fromMap(inputValue))
-          .toList();
-      setState(() {});
-    });
+    socketService.socket.on('active-values', _handleActiveInputValues);
     super.initState();
+  }
+
+  _handleActiveInputValues(dynamic payload) {
+    inputValues = (payload as List)
+        .map((inputValue) => InputValue.fromMap(inputValue))
+        .toList();
+    setState(() {});
   }
 
   @override
@@ -69,9 +71,16 @@ class _HomePageState extends State<HomePage> {
                       ))
           ],
         ),
-        body: ListView.builder(
-            itemCount: inputValues.length,
-            itemBuilder: (context, i) => _inputValueTile(inputValues[i])));
+        body: Column(
+          children: [
+            _showGraph(),
+            Expanded(
+              child: ListView.builder(
+                  itemCount: inputValues.length,
+                  itemBuilder: (context, i) => _inputValueTile(inputValues[i])),
+            ),
+          ],
+        ));
   }
 
   Widget _inputValueTile(InputValue inputValue) {
@@ -80,15 +89,15 @@ class _HomePageState extends State<HomePage> {
     return Dismissible(
       key: Key(inputValue.id),
       direction: DismissDirection.startToEnd,
-      onDismissed: (direction) {
-        socketService.socket.emit('delete-input', {'id': inputValue.id});
-        //print('direction: $direction');
-        //print('inputValues: ${inputValue.id}');
-      },
+      onDismissed: (direction) =>
+          socketService.socket.emit('delete-input', {'id': inputValue.id}),
+      //print('direction: $direction');
+      //print('inputValues: ${inputValue.id}');
+
       background: Container(
-        padding: EdgeInsets.only(left: 8.0),
+        padding: const EdgeInsets.only(left: 8.0),
         color: Colors.red,
-        child: Align(
+        child: const Align(
             alignment: Alignment.centerLeft,
             child: Text(
               'Delete',
@@ -105,11 +114,10 @@ class _HomePageState extends State<HomePage> {
           '${inputValue.votes}',
           style: const TextStyle(fontSize: 20),
         ),
-        onTap: () {
-          socketService.socket.emit('vote-input', {'id': inputValue.id});
-          print(inputValue.id);
-          //print(inputValue.name);
-        },
+        onTap: () =>
+            socketService.socket.emit('vote-input', {'id': inputValue.id}),
+        //print(inputValue.id);
+        //print(inputValue.name);
       ),
     );
   }
@@ -119,44 +127,40 @@ class _HomePageState extends State<HomePage> {
     if (Platform.isAndroid) {
       return showDialog(
           context: context,
-          builder: (context) {
-            return AlertDialog(
-              title: const Text('New Input Value'),
-              content: TextField(controller: textcontroller),
-              actions: [
-                MaterialButton(
-                    elevation: 5,
-                    textColor: Colors.blue,
-                    onPressed: () =>
-                        addNewInputvalueToList(textcontroller.text),
-                    child: const Text('Add'))
-              ],
-            );
-          });
+          builder: (_) => AlertDialog(
+                title: const Text('New Input Value'),
+                content: TextField(controller: textcontroller),
+                actions: [
+                  MaterialButton(
+                      elevation: 5,
+                      textColor: Colors.blue,
+                      onPressed: () =>
+                          addNewInputvalueToList(textcontroller.text),
+                      child: const Text('Add'))
+                ],
+              ));
     }
 
     showCupertinoDialog(
         context: context,
-        builder: (_) {
-          return CupertinoAlertDialog(
-            title: const Text('New Input Value'),
-            content: CupertinoTextField(
-              controller: textcontroller,
-            ),
-            actions: <Widget>[
-              CupertinoDialogAction(
-                isDefaultAction: true,
-                onPressed: () => addNewInputvalueToList(textcontroller.text),
-                child: const Text('Add'),
+        builder: (_) => CupertinoAlertDialog(
+              title: const Text('New Input Value'),
+              content: CupertinoTextField(
+                controller: textcontroller,
               ),
-              CupertinoDialogAction(
-                isDestructiveAction: true,
-                onPressed: () => Navigator.pop(context),
-                child: const Text('Dismiss'),
-              )
-            ],
-          );
-        });
+              actions: <Widget>[
+                CupertinoDialogAction(
+                  isDefaultAction: true,
+                  onPressed: () => addNewInputvalueToList(textcontroller.text),
+                  child: const Text('Add'),
+                ),
+                CupertinoDialogAction(
+                  isDestructiveAction: true,
+                  onPressed: () => Navigator.pop(context),
+                  child: const Text('Dismiss'),
+                )
+              ],
+            ));
   }
 
   void addNewInputvalueToList(String name) {
@@ -165,9 +169,22 @@ class _HomePageState extends State<HomePage> {
       //inputValues.add(InputValue(id: DateTime.now().toString(), name: name, votes: 0));
       //setState(() {});
       final socketService = Provider.of<SocketService>(context, listen: false);
-
       socketService.socket.emit('add-input', {'name': name});
     }
     Navigator.pop(context);
+  }
+
+  Widget _showGraph() {
+    Map<String, double> dataMap = {};
+    inputValues.forEach((inputValue) {
+      dataMap.putIfAbsent(inputValue.name, () => inputValue.votes.toDouble());
+    });
+    /* 
+    dataMap.putIfAbsent("abc", () => 1);
+    dataMap.putIfAbsent("dfsgfd", () => 2);
+    dataMap.putIfAbsent("rj", () => 4);
+    dataMap.putIfAbsent("zxcv", () => 6); */
+
+    return PieChart(dataMap: dataMap);
   }
 }
