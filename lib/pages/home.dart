@@ -81,9 +81,9 @@ class _HomePageState extends State<HomePage> {
       key: Key(inputValue.id),
       direction: DismissDirection.startToEnd,
       onDismissed: (direction) {
-        //TO
-        print('direction: $direction');
-        print('inputValues: ${inputValue.id}');
+        socketService.socket.emit('delete-input', {'id': inputValue.id});
+        //print('direction: $direction');
+        //print('inputValues: ${inputValue.id}');
       },
       background: Container(
         padding: EdgeInsets.only(left: 8.0),
